@@ -3,6 +3,9 @@ import DbSetupMessage from "@/src/components/db-setup-message";
 import { getPrismaSetupErrorMessage } from "@/src/lib/prisma-guard";
 import { prisma } from "@/src/lib/prisma";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function Home() {
   const loaded = await (async () => {
     try {

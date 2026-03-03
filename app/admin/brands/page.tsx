@@ -5,6 +5,13 @@ import DbSetupMessage from "@/src/components/db-setup-message";
 import { getPrismaSetupErrorMessage } from "@/src/lib/prisma-guard";
 import { prisma } from "@/src/lib/prisma";
 
+type BrandRow = {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: Date;
+};
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -32,10 +39,7 @@ export default async function BrandsAdminPage() {
     }
 
     await prisma.brand.create({
-      data: {
-        name,
-        slug,
-      },
+      data: { name, slug },
     });
 
     revalidatePath("/admin");
@@ -44,7 +48,9 @@ export default async function BrandsAdminPage() {
     redirect("/admin/brands");
   }
 
-  const loaded = await (async () => {
+  const loaded:
+    | { ok: true; brands: BrandRow[] }
+    | { ok: false; setupErrorMessage: string } = await (async () => {
     try {
       const brands = await prisma.brand.findMany({
         orderBy: { createdAt: "desc" },
@@ -56,13 +62,12 @@ export default async function BrandsAdminPage() {
         },
       });
 
-      return { ok: true as const, brands };
+      return { ok: true as const, brands: brands as BrandRow[] };
     } catch (error) {
       const setupErrorMessage = getPrismaSetupErrorMessage(error);
       if (setupErrorMessage) {
         return { ok: false as const, setupErrorMessage };
       }
-
       throw error;
     }
   })();
@@ -113,6 +118,7 @@ export default async function BrandsAdminPage() {
           <h2 className="text-lg font-semibold text-slate-900">Existing brands</h2>
           <p className="text-sm text-slate-500">{brands.length} records</p>
         </div>
+
         {brands.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
