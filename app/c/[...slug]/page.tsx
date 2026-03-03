@@ -1,4 +1,5 @@
-import { ImageType, Prisma } from "@prisma/client";
+import { ImageType } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DbSetupMessage from "@/src/components/db-setup-message";
