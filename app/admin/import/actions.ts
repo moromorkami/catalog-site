@@ -1,6 +1,5 @@
 "use server";
 
-import { ImageType } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/src/lib/prisma";
@@ -61,6 +60,10 @@ type RowImportCounts = {
   imagesCreated: number;
 };
 
+// ✅ Prisma v7-friendly enum typing without importing ImageType
+type ProductImageType = Prisma.ProductImageCreateManyInput["type"];
+const SUPPLIER_IMAGE_TYPE: ProductImageType = "SUPPLIER";
+
 function slugify(value: string) {
   return value
     .normalize("NFKD")
@@ -97,9 +100,9 @@ function parseCsv(csvText: string): string[][] {
     const char = csvText[i];
 
     if (inQuotes) {
-      if (char === "\"") {
-        if (csvText[i + 1] === "\"") {
-          cell += "\"";
+      if (char === '"') {
+        if (csvText[i + 1] === '"') {
+          cell += '"';
           i += 1;
         } else {
           inQuotes = false;
@@ -110,7 +113,7 @@ function parseCsv(csvText: string): string[][] {
       continue;
     }
 
-    if (char === "\"") {
+    if (char === '"') {
       inQuotes = true;
       continue;
     }
@@ -335,7 +338,7 @@ async function importRecordRow(
     await tx.productImage.createMany({
       data: imageUrls.map((url, index) => ({
         productId: product.id,
-        type: ImageType.SUPPLIER,
+        type: SUPPLIER_IMAGE_TYPE,
         url,
         sortOrder: index + 1,
       })),
