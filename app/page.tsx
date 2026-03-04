@@ -6,6 +6,24 @@ import { prisma } from "@/src/lib/prisma";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+type TopCategoryRow = {
+  id: string;
+  slug: string;
+  name: string;
+  _count: {
+    productCategories: number;
+    children: number;
+  };
+};
+
+type RecentProductRow = {
+  id: string;
+  title: string;
+  supplier: { name: string };
+  brand: { name: string } | null;
+  categories: Array<{ category: { name: string } }>;
+};
+
 export default async function Home() {
   const loaded = await (async () => {
     try {
@@ -97,7 +115,7 @@ export default async function Home() {
         </div>
         {topCategories.length > 0 ? (
           <div className="grid gap-3 sm:grid-cols-2">
-            {topCategories.map((category) => (
+            {topCategories.map((category: TopCategoryRow) => (
               <Link
                 key={category.id}
                 href={`/c/${category.slug}`}
@@ -123,7 +141,7 @@ export default async function Home() {
         </div>
         {recentProducts.length > 0 ? (
           <div className="grid gap-3">
-            {recentProducts.map((product) => (
+            {recentProducts.map((product: RecentProductRow) => (
               <article key={product.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -133,7 +151,9 @@ export default async function Home() {
                       {product.brand ? ` | Brand: ${product.brand.name}` : ""}
                     </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {product.categories.map((item) => item.category.name).join(", ") || "No categories assigned"}
+                      {product.categories
+                        .map((item: { category: { name: string } }) => item.category.name)
+                        .join(", ") || "No categories assigned"}
                     </p>
                   </div>
                   <Link
