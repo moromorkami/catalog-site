@@ -4,6 +4,9 @@ import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/src/lib/prisma";
 
+type ProductImageType = Prisma.ProductImageCreateManyInput["type"];
+const SUPPLIER_IMAGE_TYPE: ProductImageType = "SUPPLIER";
+
 const REQUIRED_COLUMNS = [
   "supplier_name",
   "brand",
@@ -59,10 +62,6 @@ type RowImportCounts = {
   productsCreated: number;
   imagesCreated: number;
 };
-
-// ✅ Prisma v7-friendly enum typing without importing ImageType
-type ProductImageType = Prisma.ProductImageCreateManyInput["type"];
-const SUPPLIER_IMAGE_TYPE: ProductImageType = "SUPPLIER";
 
 function slugify(value: string) {
   return value
@@ -200,21 +199,10 @@ async function importRecordRow(
     .map((url) => url.trim())
     .filter(Boolean);
 
-  if (!supplierName) {
-    throw new Error("supplier_name is required.");
-  }
-
-  if (!title) {
-    throw new Error("title is required.");
-  }
-
-  if (!categoryPath) {
-    throw new Error("category_path is required.");
-  }
-
-  if (sourceUrl && !isValidUrl(sourceUrl)) {
-    throw new Error(`Invalid source_url: ${sourceUrl}`);
-  }
+  if (!supplierName) throw new Error("supplier_name is required.");
+  if (!title) throw new Error("title is required.");
+  if (!categoryPath) throw new Error("category_path is required.");
+  if (sourceUrl && !isValidUrl(sourceUrl)) throw new Error(`Invalid source_url: ${sourceUrl}`);
 
   for (const imageUrl of imageUrls) {
     if (!imageUrl.startsWith("/") && !isValidUrl(imageUrl)) {
@@ -223,9 +211,7 @@ async function importRecordRow(
   }
 
   const supplierSlug = slugify(supplierName);
-  if (!supplierSlug) {
-    throw new Error("Cannot generate supplier slug.");
-  }
+  if (!supplierSlug) throw new Error("Cannot generate supplier slug.");
 
   let suppliersCreated = 0;
   let brandsCreated = 0;
@@ -239,10 +225,7 @@ async function importRecordRow(
 
   if (!supplier) {
     supplier = await tx.supplier.create({
-      data: {
-        name: supplierName,
-        slug: supplierSlug,
-      },
+      data: { name: supplierName, slug: supplierSlug },
       select: { id: true },
     });
     suppliersCreated += 1;
@@ -251,9 +234,7 @@ async function importRecordRow(
   let brandId: string | null = null;
   if (brandName) {
     const brandSlug = slugify(brandName);
-    if (!brandSlug) {
-      throw new Error("Cannot generate brand slug.");
-    }
+    if (!brandSlug) throw new Error("Cannot generate brand slug.");
 
     let brand = await tx.brand.findUnique({
       where: { slug: brandSlug },
@@ -262,10 +243,7 @@ async function importRecordRow(
 
     if (!brand) {
       brand = await tx.brand.create({
-        data: {
-          name: brandName,
-          slug: brandSlug,
-        },
+        data: { name: brandName, slug: brandSlug },
         select: { id: true },
       });
       brandsCreated += 1;
@@ -288,25 +266,16 @@ async function importRecordRow(
 
   for (const segment of categorySegments) {
     const segmentSlug = slugify(segment);
-    if (!segmentSlug) {
-      throw new Error(`Cannot generate category slug from segment: ${segment}`);
-    }
+    if (!segmentSlug) throw new Error(`Cannot generate category slug from segment: ${segment}`);
 
     let category: { id: string } | null = await tx.category.findFirst({
-      where: {
-        parentId,
-        slug: segmentSlug,
-      },
+      where: { parentId, slug: segmentSlug },
       select: { id: true },
     });
 
     if (!category) {
       category = await tx.category.create({
-        data: {
-          name: segment,
-          slug: segmentSlug,
-          parentId,
-        },
+        data: { name: segment, slug: segmentSlug, parentId },
         select: { id: true },
       });
       categoriesCreated += 1;
@@ -323,13 +292,9 @@ async function importRecordRow(
       title,
       description,
       sourceUrl,
-      supplier: {
-        connect: { id: supplier.id },
-      },
+      supplier: { connect: { id: supplier.id } },
       ...(brandId ? { brand: { connect: { id: brandId } } } : {}),
-      categories: {
-        create: uniqueCategoryIds.map((categoryId) => ({ categoryId })),
-      },
+      categories: { create: uniqueCategoryIds.map((categoryId) => ({ categoryId })) },
     },
     select: { id: true },
   });
@@ -363,21 +328,11 @@ export async function importCsvAction(
     const file = formData.get("file");
 
     if (!(file instanceof File)) {
-      return {
-        status: "error",
-        message: "Please upload a CSV file.",
-        summary: null,
-        errors: [],
-      };
+      return { status: "error", message: "Please upload a CSV file.", summary: null, errors: [] };
     }
 
     if (file.size === 0) {
-      return {
-        status: "error",
-        message: "Uploaded CSV file is empty.",
-        summary: null,
-        errors: [],
-      };
+      return { status: "error", message: "Uploaded CSV file is empty.", summary: null, errors: [] };
     }
 
     if (file.size > MAX_FILE_SIZE) {
@@ -393,12 +348,7 @@ export async function importCsvAction(
     const records = parseCsvRecords(csvText);
 
     if (records.length === 0) {
-      return {
-        status: "error",
-        message: "CSV has no data rows.",
-        summary: null,
-        errors: [],
-      };
+      return { status: "error", message: "CSV has no data rows.", summary: null, errors: [] };
     }
 
     const summary: ImportSummary = {
@@ -416,11 +366,10 @@ export async function importCsvAction(
 
     for (let index = 0; index < records.length; index += 1) {
       const row = records[index];
-      const rowNumber = index + 2; // header row + 1
+      const rowNumber = index + 2;
 
       try {
         const rowCounts = await prisma.$transaction((tx) => importRecordRow(tx, row));
-
         summary.rowsSucceeded += 1;
         summary.suppliersCreated += rowCounts.suppliersCreated;
         summary.brandsCreated += rowCounts.brandsCreated;
@@ -454,11 +403,6 @@ export async function importCsvAction(
       errors,
     };
   } catch (error) {
-    return {
-      status: "error",
-      message: toErrorMessage(error),
-      summary: null,
-      errors: [],
-    };
+    return { status: "error", message: toErrorMessage(error), summary: null, errors: [] };
   }
 }
