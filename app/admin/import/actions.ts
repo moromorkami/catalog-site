@@ -5,6 +5,11 @@ import { prisma } from "@/src/lib/prisma";
 
 const SUPPLIER_IMAGE_TYPE = "SUPPLIER" as const;
 
+type ImportTransaction = Pick<
+  typeof prisma,
+  "supplier" | "brand" | "category" | "product" | "productImage"
+>;
+
 const REQUIRED_COLUMNS = [
   "supplier_name",
   "brand",
@@ -172,7 +177,7 @@ function parseCsvRecords(csvText: string): CsvRecord[] {
   });
 }
 
-async function importRecordRow(tx: any, row: CsvRecord): Promise<RowImportCounts> {
+async function importRecordRow(tx: ImportTransaction, row: CsvRecord): Promise<RowImportCounts> {
   const supplierName = row.supplier_name.trim();
   const brandName = row.brand.trim();
   const categoryPath = row.category_path.trim();
@@ -362,9 +367,9 @@ export async function importCsvAction(
       const rowNumber = index + 2;
 
       try {
-        const rowCounts = await prisma.$transaction(async (tx: any) => {
-  return importRecordRow(tx, row);
-});
+        const rowCounts = await prisma.$transaction(async (tx) => {
+          return importRecordRow(tx as unknown as ImportTransaction, row);
+        });
         summary.rowsSucceeded += 1;
         summary.suppliersCreated += rowCounts.suppliersCreated;
         summary.brandsCreated += rowCounts.brandsCreated;
