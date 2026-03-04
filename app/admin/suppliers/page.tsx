@@ -138,7 +138,7 @@ export default async function SuppliersAdminPage() {
                 </tr>
               </thead>
               <tbody className="text-slate-700">
-                {suppliers.map((supplier) => (
+                {suppliers.map((supplier: any) => (
                   <tr key={supplier.id} className="border-t border-slate-100">
                     <td className="py-2 pr-4">{supplier.name}</td>
                     <td className="py-2 pr-4">{supplier.slug}</td>
