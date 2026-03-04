@@ -242,11 +242,11 @@ export default async function NewProductAdminPage() {
                 <option value="" disabled>
                   Select supplier
                 </option>
-                {suppliers.map((supplier) => (
-                  <option key={supplier.id} value={supplier.id}>
-                    {supplier.name}
-                  </option>
-                ))}
+                {suppliers.map((supplier: any) => (
+  <option key={supplier.id} value={supplier.id}>
+    {supplier.name}
+  </option>
+))}
               </select>
             </label>
             <label className="text-sm">
@@ -257,11 +257,11 @@ export default async function NewProductAdminPage() {
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
               >
                 <option value="">No brand</option>
-                {brands.map((brand) => (
-                  <option key={brand.id} value={brand.id}>
-                    {brand.name}
-                  </option>
-                ))}
+                {brands.map((brand: any) => (
+  <option key={brand.id} value={brand.id}>
+    {brand.name}
+  </option>
+))}
               </select>
             </label>
             <label className="text-sm">
@@ -300,12 +300,12 @@ export default async function NewProductAdminPage() {
             <div className="max-h-56 overflow-y-auto rounded-md border border-slate-300 p-3">
               {categoryPaths.length > 0 ? (
                 <div className="grid gap-2">
-                  {categoryPaths.map((category) => (
-                    <label key={category.id} className="flex items-center gap-2 text-sm text-slate-700">
-                      <input type="checkbox" name="categoryIds" value={category.id} className="h-4 w-4" />
-                      {category.pathLabel}
-                    </label>
-                  ))}
+                  {categoryPaths.map((category: any) => (
+  <label key={category.id} className="flex items-center gap-2 text-sm text-slate-700">
+    <input type="checkbox" name="categoryIds" value={category.id} className="h-4 w-4" />
+    {category.pathLabel}
+  </label>
+))}
                 </div>
               ) : (
                 <p className="text-sm text-slate-500">No categories yet.</p>
@@ -337,8 +337,8 @@ export default async function NewProductAdminPage() {
         </div>
         {recentProducts.length > 0 ? (
           <div className="grid gap-3">
-            {recentProducts.map((product) => (
-              <article key={product.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            {recentProducts.map((product: any) => (
+  <article key={product.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">{product.title}</p>
