@@ -102,10 +102,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
         },
       });
 
-      const categoryById = new Map(allCategories.map((category: any) => [category.id, category]));
-      const categoryPaths = product.categories.map((item: any) =>
-        buildCategoryPath(item.category.id, categoryById),
-      );
+      const categoryById: Map<string, CategoryNode> = new Map(
+  (allCategories as any[]).map(
+    (category) => [String(category.id), category as CategoryNode] as [string, CategoryNode],
+  ),
+);
+
+const categoryPaths = (product.categories as any[]).map((item) =>
+  buildCategoryPath(String(item.category.id), categoryById),
+);
 
       const supplierPhotos = product.images
         .filter((image) => image.type === IMAGE_TYPE_SUPPLIER)
