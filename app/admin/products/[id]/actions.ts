@@ -74,7 +74,7 @@ export async function reorderSupplierImagesAction(formData: FormData) {
         throw new Error("Supplier image order is out of sync. Reload and try again.");
       }
 
-      const existingIds = new Set(existingImages.map((image) => image.id));
+      const existingIds = new Set(existingImages.map((image: any) => image.id));
       for (const id of orderedIds) {
         if (!existingIds.has(id)) {
           throw new Error("Supplier image order contains invalid image IDs.");
@@ -128,7 +128,7 @@ export async function reorderQcSetImagesAction(formData: FormData) {
         throw new Error("QC image order is out of sync. Reload and try again.");
       }
 
-      const existingIds = new Set(existingImages.map((image) => image.id));
+      const existingIds = new Set(existingImages.map((image: any) => image.id));
       for (const id of orderedIds) {
         if (!existingIds.has(id)) {
           throw new Error("QC image order contains invalid image IDs.");
