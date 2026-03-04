@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { OrderStatus } from "@prisma/client";
 import DbSetupMessage from "@/src/components/db-setup-message";
 import { getPrismaSetupErrorMessage } from "@/src/lib/prisma-guard";
 import { prisma } from "@/src/lib/prisma";
+
+type OrderStatus = "NEW" | "IN_PROGRESS" | "PAID" | "SHIPPED" | "CANCELLED";
 
 const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   NEW: "New",
@@ -68,56 +69,60 @@ export default async function OrdersAdminPage() {
 
         {orders.length > 0 ? (
           <div className="grid gap-4">
-            {orders.map((order) => (
-              <article key={order.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">Order {order.id}</p>
-                    <p className="text-xs text-slate-600">
-                      {order.createdAt.toLocaleString()} | Status: {ORDER_STATUS_LABELS[order.status]}
+            {orders.map((order) => {
+              const status = order.status as OrderStatus;
+
+              return (
+                <article key={order.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">Order {order.id}</p>
+                      <p className="text-xs text-slate-600">
+                        {order.createdAt.toLocaleString()} | Status: {ORDER_STATUS_LABELS[status] ?? String(order.status)}
+                      </p>
+                    </div>
+                    <div className="text-right text-xs text-slate-600">
+                      <p>Name: {order.name || "-"}</p>
+                      <p>Phone/Telegram: {order.phone || "-"}</p>
+                      <p>Email: {order.email || "-"}</p>
+                    </div>
+                  </div>
+
+                  {order.note ? (
+                    <p className="mt-3 rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
+                      Note: {order.note}
                     </p>
-                  </div>
-                  <div className="text-right text-xs text-slate-600">
-                    <p>Name: {order.name || "-"}</p>
-                    <p>Phone/Telegram: {order.phone || "-"}</p>
-                    <p>Email: {order.email || "-"}</p>
-                  </div>
-                </div>
+                  ) : null}
 
-                {order.note ? (
-                  <p className="mt-3 rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700">
-                    Note: {order.note}
-                  </p>
-                ) : null}
-
-                <div className="mt-3 overflow-x-auto">
-                  <table className="min-w-full text-left text-sm">
-                    <thead className="text-slate-500">
-                      <tr>
-                        <th className="pb-2 pr-4 font-medium">Product</th>
-                        <th className="pb-2 pr-4 font-medium">Qty</th>
-                        <th className="pb-2 pr-4 font-medium">Variant</th>
-                        <th className="pb-2 font-medium">Item note</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-slate-700">
-                      {order.items.map((item) => (
-                        <tr key={item.id} className="border-t border-slate-100">
-                          <td className="py-2 pr-4">
-                            <Link href={`/p/${item.product.id}`} className="text-slate-900 underline">
-                              {item.product.title}
-                            </Link>
-                          </td>
-                          <td className="py-2 pr-4">{item.qty}</td>
-                          <td className="py-2 pr-4">{item.variant || "-"}</td>
-                          <td className="py-2">{item.note || "-"}</td>
+                  <div className="mt-3 overflow-x-auto">
+                    <table className="min-w-full text-left text-sm">
+                      <thead className="text-slate-500">
+                        <tr>
+                          <th className="pb-2 pr-4 font-medium">Product</th>
+                          <th className="pb-2 pr-4 font-medium">Qty</th>
+                          <th className="pb-2 pr-4 font-medium">Variant</th>
+                          <th className="pb-2 font-medium">Item note</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </article>
-            ))}
+                      </thead>
+                      <tbody className="text-slate-700">
+                        {order.items.map((item) => (
+                          <tr key={item.id} className="border-t border-slate-100">
+                            <td className="py-2 pr-4">
+                              <Link href={`/p/${item.product.id}`} className="text-slate-900 underline">
+                                {item.product.title}
+                              </Link>
+                            </td>
+                            <td className="py-2 pr-4">{item.qty}</td>
+                            <td className="py-2 pr-4">{item.variant || "-"}</td>
+                            <td className="py-2">{item.note || "-"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         ) : (
           <p className="text-sm text-slate-600">No order requests yet.</p>
