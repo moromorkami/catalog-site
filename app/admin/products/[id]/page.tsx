@@ -153,7 +153,7 @@ export default async function ProductEditAdminPage({ params, searchParams }: Pro
 
         <div className="mt-4 grid gap-4">
           {product.qcSets.length > 0 ? (
-            product.qcSets.map((qcSet, index) => (
+            product.qcSets.map((qcSet: any, index: number) => (
               <article key={qcSet.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <h3 className="text-base font-semibold text-slate-900">QC Set #{index + 1}</h3>
 
