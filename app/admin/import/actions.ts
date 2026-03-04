@@ -1,11 +1,9 @@
 "use server";
 
-import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/src/lib/prisma";
 
-type ProductImageType = Prisma.ProductImageCreateManyInput["type"];
-const SUPPLIER_IMAGE_TYPE: ProductImageType = "SUPPLIER";
+const SUPPLIER_IMAGE_TYPE = "SUPPLIER" as const;
 
 const REQUIRED_COLUMNS = [
   "supplier_name",
@@ -73,10 +71,7 @@ function slugify(value: string) {
 }
 
 function toErrorMessage(error: unknown) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
+  if (error instanceof Error && error.message) return error.message;
   return "Unknown import error.";
 }
 
@@ -131,9 +126,7 @@ function parseCsv(csvText: string): string[][] {
       continue;
     }
 
-    if (char === "\r") {
-      continue;
-    }
+    if (char === "\r") continue;
 
     cell += char;
   }
@@ -146,9 +139,7 @@ function parseCsv(csvText: string): string[][] {
 
 function parseCsvRecords(csvText: string): CsvRecord[] {
   const rows = parseCsv(csvText);
-  if (rows.length === 0) {
-    throw new Error("CSV is empty.");
-  }
+  if (rows.length === 0) throw new Error("CSV is empty.");
 
   const headers = rows[0].map((value) => value.replace(/^\uFEFF/, "").trim().toLowerCase());
   const headerIndex = new Map(headers.map((header, index) => [header, index]));
@@ -166,10 +157,7 @@ function parseCsvRecords(csvText: string): CsvRecord[] {
   return dataRows.map((record) => {
     const getValue = (column: RequiredColumn) => {
       const index = headerIndex.get(column);
-      if (index === undefined) {
-        return "";
-      }
-      return (record[index] ?? "").trim();
+      return index === undefined ? "" : (record[index] ?? "").trim();
     };
 
     return {
@@ -184,16 +172,14 @@ function parseCsvRecords(csvText: string): CsvRecord[] {
   });
 }
 
-async function importRecordRow(
-  tx: Prisma.TransactionClient,
-  row: CsvRecord,
-): Promise<RowImportCounts> {
+async function importRecordRow(tx: any, row: CsvRecord): Promise<RowImportCounts> {
   const supplierName = row.supplier_name.trim();
   const brandName = row.brand.trim();
   const categoryPath = row.category_path.trim();
   const title = row.title.trim();
   const description = row.description.trim() || null;
   const sourceUrl = row.source_url.trim() || null;
+
   const imageUrls = row.image_urls
     .split(";")
     .map((url) => url.trim())
@@ -202,7 +188,10 @@ async function importRecordRow(
   if (!supplierName) throw new Error("supplier_name is required.");
   if (!title) throw new Error("title is required.");
   if (!categoryPath) throw new Error("category_path is required.");
-  if (sourceUrl && !isValidUrl(sourceUrl)) throw new Error(`Invalid source_url: ${sourceUrl}`);
+
+  if (sourceUrl && !isValidUrl(sourceUrl)) {
+    throw new Error(`Invalid source_url: ${sourceUrl}`);
+  }
 
   for (const imageUrl of imageUrls) {
     if (!imageUrl.startsWith("/") && !isValidUrl(imageUrl)) {
@@ -274,15 +263,19 @@ async function importRecordRow(
     });
 
     if (!category) {
-      category = await tx.category.create({
-        data: { name: segment, slug: segmentSlug, parentId },
-        select: { id: true },
-      });
-      categoriesCreated += 1;
-    }
+  category = await tx.category.create({
+    data: { name: segment, slug: segmentSlug, parentId },
+    select: { id: true },
+  });
+  categoriesCreated += 1;
+}
 
-    categoryIds.push(category.id);
-    parentId = category.id;
+if (!category) {
+  throw new Error("Category creation failed unexpectedly.");
+}
+
+categoryIds.push(category.id);
+parentId = category.id;
   }
 
   const uniqueCategoryIds = [...new Set(categoryIds)];
