@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { ImageType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import DbSetupMessage from "@/src/components/db-setup-message";
 import { getPrismaSetupErrorMessage } from "@/src/lib/prisma-guard";
 import { prisma } from "@/src/lib/prisma";
 import UploadFields from "./upload-fields";
+
+const IMAGE_TYPE_SUPPLIER = "SUPPLIER" as const;
+const IMAGE_TYPE_QC = "QC" as const;
 
 type CategoryNode = {
   id: string;
@@ -105,7 +107,7 @@ export default async function NewProductAdminPage() {
       await prisma.productImage.createMany({
         data: supplierPhotoUrls.map((url, index) => ({
           productId: product.id,
-          type: ImageType.SUPPLIER,
+          type: IMAGE_TYPE_SUPPLIER,
           url,
           sortOrder: index + 1,
         })),
@@ -125,7 +127,7 @@ export default async function NewProductAdminPage() {
       await prisma.productImage.createMany({
         data: qcPhotoUrls.map((url, index) => ({
           productId: product.id,
-          type: ImageType.QC,
+          type: IMAGE_TYPE_QC,
           qcSetId: qcSet.id,
           url,
           sortOrder: index + 1,

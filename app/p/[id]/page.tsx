@@ -1,10 +1,12 @@
-import { ImageType } from "@prisma/client";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DbSetupMessage from "@/src/components/db-setup-message";
 import { getPrismaSetupErrorMessage } from "@/src/lib/prisma-guard";
 import { prisma } from "@/src/lib/prisma";
 import PhotoTabs from "./photo-tabs";
+
+const IMAGE_TYPE_SUPPLIER = "SUPPLIER" as const;
+const IMAGE_TYPE_QC = "QC" as const;
 
 type ProductPageProps = {
   params: Promise<{ id: string }>;
@@ -106,7 +108,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       );
 
       const supplierPhotos = product.images
-        .filter((image) => image.type === ImageType.SUPPLIER)
+        .filter((image) => image.type === IMAGE_TYPE_SUPPLIER)
         .map((image, index) => ({
           id: image.id,
           url: image.url,
@@ -114,7 +116,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         }));
 
       const unassignedQcPhotos = product.images
-        .filter((image) => image.type === ImageType.QC && !image.qcSetId)
+        .filter((image) => image.type === IMAGE_TYPE_QC && !image.qcSetId)
         .map((image, index) => ({
           id: image.id,
           url: image.url,

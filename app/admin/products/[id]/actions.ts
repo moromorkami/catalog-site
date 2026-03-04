@@ -9,6 +9,8 @@ import { prisma } from "@/src/lib/prisma";
 const IMAGE_TYPE_SUPPLIER = "SUPPLIER" as const;
 const IMAGE_TYPE_QC = "QC" as const;
 
+type ProductMediaTransaction = Pick<typeof prisma, "productImage" | "qcSet">;
+
 function toMessage(error: unknown) {
   if (error instanceof Error && error.message) {
     return error.message;
@@ -58,8 +60,9 @@ export async function reorderSupplierImagesAction(formData: FormData) {
   try {
     const orderedIds = parseOrderedIds(formData);
 
-    await prisma.$transaction(async (tx: any) => {
-      const existingImages = await tx.productImage.findMany({
+    await prisma.$transaction(async (tx) => {
+      const client = tx as unknown as ProductMediaTransaction;
+      const existingImages = await client.productImage.findMany({
         where: {
           productId,
           type: IMAGE_TYPE_SUPPLIER,
@@ -71,7 +74,7 @@ export async function reorderSupplierImagesAction(formData: FormData) {
         throw new Error("Supplier image order is out of sync. Reload and try again.");
       }
 
-      const existingIds = new Set(existingImages.map((image: any) => image.id));
+      const existingIds = new Set(existingImages.map((image) => image.id));
       for (const id of orderedIds) {
         if (!existingIds.has(id)) {
           throw new Error("Supplier image order contains invalid image IDs.");
@@ -79,7 +82,7 @@ export async function reorderSupplierImagesAction(formData: FormData) {
       }
 
       for (let index = 0; index < orderedIds.length; index += 1) {
-        await tx.productImage.update({
+        await client.productImage.update({
           where: { id: orderedIds[index] },
           data: { sortOrder: index + 1 },
         });
@@ -101,8 +104,9 @@ export async function reorderQcSetImagesAction(formData: FormData) {
   try {
     const orderedIds = parseOrderedIds(formData);
 
-    await prisma.$transaction(async (tx: any) => {
-      const qcSet = await tx.qcSet.findUnique({
+    await prisma.$transaction(async (tx) => {
+      const client = tx as unknown as ProductMediaTransaction;
+      const qcSet = await client.qcSet.findUnique({
         where: { id: qcSetId },
         select: { id: true, productId: true },
       });
@@ -111,7 +115,7 @@ export async function reorderQcSetImagesAction(formData: FormData) {
         throw new Error("QC set not found for this product.");
       }
 
-      const existingImages = await tx.productImage.findMany({
+      const existingImages = await client.productImage.findMany({
         where: {
           productId,
           type: IMAGE_TYPE_QC,
@@ -124,7 +128,7 @@ export async function reorderQcSetImagesAction(formData: FormData) {
         throw new Error("QC image order is out of sync. Reload and try again.");
       }
 
-      const existingIds = new Set(existingImages.map((image: any) => image.id));
+      const existingIds = new Set(existingImages.map((image) => image.id));
       for (const id of orderedIds) {
         if (!existingIds.has(id)) {
           throw new Error("QC image order contains invalid image IDs.");
@@ -132,7 +136,7 @@ export async function reorderQcSetImagesAction(formData: FormData) {
       }
 
       for (let index = 0; index < orderedIds.length; index += 1) {
-        await tx.productImage.update({
+        await client.productImage.update({
           where: { id: orderedIds[index] },
           data: { sortOrder: index + 1 },
         });

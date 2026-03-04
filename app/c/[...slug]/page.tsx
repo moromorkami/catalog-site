@@ -1,5 +1,3 @@
-import { ImageType } from "@prisma/client";
-import type { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DbSetupMessage from "@/src/components/db-setup-message";
@@ -23,6 +21,8 @@ type Breadcrumb = {
 
 const toSingleValue = (value?: string | string[]) =>
   Array.isArray(value) ? value[0] : value;
+
+const IMAGE_TYPE_QC = "QC" as const;
 
 async function resolveCategoryPath(slugs: string[]) {
   let parentId: string | null = null;
@@ -80,28 +80,23 @@ export default async function CategoryPage({
       const supplierFilter = toSingleValue(filters.supplier) ?? "";
       const hasQcFilter = toSingleValue(filters.hasQC) === "1";
 
-      const productWhere: Prisma.ProductWhereInput = {
+      const productWhere = {
         categories: {
           some: {
             categoryId: resolvedPath.category.id,
           },
         },
+        ...(brandFilter ? { brand: { slug: brandFilter } } : {}),
+        ...(supplierFilter ? { supplier: { slug: supplierFilter } } : {}),
+        ...(hasQcFilter
+          ? {
+              OR: [
+                { qcSets: { some: {} } },
+                { images: { some: { type: IMAGE_TYPE_QC } } },
+              ],
+            }
+          : {}),
       };
-
-      if (brandFilter) {
-        productWhere.brand = { slug: brandFilter };
-      }
-
-      if (supplierFilter) {
-        productWhere.supplier = { slug: supplierFilter };
-      }
-
-      if (hasQcFilter) {
-        productWhere.OR = [
-          { qcSets: { some: {} } },
-          { images: { some: { type: ImageType.QC } } },
-        ];
-      }
 
       const [products, brands, suppliers] = await Promise.all([
         prisma.product.findMany({
@@ -118,7 +113,7 @@ export default async function CategoryPage({
               select: { qcSets: true },
             },
             images: {
-              where: { type: ImageType.QC },
+              where: { type: IMAGE_TYPE_QC },
               select: { id: true },
               take: 1,
             },

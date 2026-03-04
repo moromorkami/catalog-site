@@ -1,5 +1,8 @@
-import { ImageType, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+
+const IMAGE_TYPE_SUPPLIER = "SUPPLIER" as const;
+const IMAGE_TYPE_QC = "QC" as const;
 
 const connectionString = process.env.DATABASE_URL?.trim();
 
@@ -125,26 +128,26 @@ async function main() {
     data: [
       {
         productId: product.id,
-        type: ImageType.SUPPLIER,
+        type: IMAGE_TYPE_SUPPLIER,
         url: "/next.svg",
         sortOrder: 1,
       },
       {
         productId: product.id,
-        type: ImageType.SUPPLIER,
+        type: IMAGE_TYPE_SUPPLIER,
         url: "/window.svg",
         sortOrder: 2,
       },
       {
         productId: product.id,
-        type: ImageType.QC,
+        type: IMAGE_TYPE_QC,
         qcSetId: qcSet.id,
         url: "/globe.svg",
         sortOrder: 1,
       },
       {
         productId: product.id,
-        type: ImageType.QC,
+        type: IMAGE_TYPE_QC,
         qcSetId: qcSet.id,
         url: "/file.svg",
         sortOrder: 2,
