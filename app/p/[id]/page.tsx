@@ -122,18 +122,18 @@ const categoryPaths = (product.categories as any[]).map((item) =>
 
       const unassignedQcPhotos = product.images
         .filter((image: any) => image.type === IMAGE_TYPE_QC && !image.qcSetId)
-        .map((image, index) => ({
+        .map((image: any, index: number) => ({
           id: image.id,
           url: image.url,
           label: `QC photo ${index + 1}`,
         }));
 
-      const qcSets = product.qcSets.map((set, index) => ({
+      const qcSets = product.qcSets.map((set: any, index: number) => ({
         id: set.id,
         title: set.title || `QC set ${index + 1}`,
         warehouse: set.warehouse,
         notes: set.notes,
-        photos: set.images.map((image, imageIndex) => ({
+        photos: set.images.map((image: any, imageIndex: number) => ({
           id: image.id,
           url: image.url,
           label: `QC photo ${imageIndex + 1}`,
