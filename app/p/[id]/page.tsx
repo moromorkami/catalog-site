@@ -121,7 +121,7 @@ const categoryPaths = (product.categories as any[]).map((item) =>
         }));
 
       const unassignedQcPhotos = product.images
-        .filter((image) => image.type === IMAGE_TYPE_QC && !image.qcSetId)
+        .filter((image: any) => image.type === IMAGE_TYPE_QC && !image.qcSetId)
         .map((image, index) => ({
           id: image.id,
           url: image.url,
