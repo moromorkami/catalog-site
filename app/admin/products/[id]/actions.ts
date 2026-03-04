@@ -60,7 +60,7 @@ export async function reorderSupplierImagesAction(formData: FormData) {
   try {
     const orderedIds = parseOrderedIds(formData);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       const client = tx as unknown as ProductMediaTransaction;
       const existingImages = await client.productImage.findMany({
         where: {
@@ -104,7 +104,7 @@ export async function reorderQcSetImagesAction(formData: FormData) {
   try {
     const orderedIds = parseOrderedIds(formData);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       const client = tx as unknown as ProductMediaTransaction;
       const qcSet = await client.qcSet.findUnique({
         where: { id: qcSetId },
