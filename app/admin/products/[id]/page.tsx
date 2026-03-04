@@ -1,4 +1,3 @@
-import { ImageType } from "@prisma/client";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DbSetupMessage from "@/src/components/db-setup-message";
@@ -12,15 +11,15 @@ import {
 } from "./actions";
 import SortableImageList from "./sortable-image-list";
 
+const IMAGE_TYPE_SUPPLIER = "SUPPLIER" as const;
+const IMAGE_TYPE_QC = "QC" as const;
+
 type ProductEditPageProps = {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ status?: string; message?: string }>;
 };
 
-export default async function ProductEditAdminPage({
-  params,
-  searchParams,
-}: ProductEditPageProps) {
+export default async function ProductEditAdminPage({ params, searchParams }: ProductEditPageProps) {
   const { id } = await params;
   const query = await searchParams;
 
@@ -43,7 +42,7 @@ export default async function ProductEditAdminPage({
           },
           images: {
             where: {
-              type: ImageType.SUPPLIER,
+              type: IMAGE_TYPE_SUPPLIER,
             },
             orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
             select: {
@@ -61,7 +60,7 @@ export default async function ProductEditAdminPage({
               notes: true,
               images: {
                 where: {
-                  type: ImageType.QC,
+                  type: IMAGE_TYPE_QC,
                 },
                 orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
                 select: {
@@ -135,9 +134,7 @@ export default async function ProductEditAdminPage({
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Supplier Images</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Drag and drop images to reorder them, then click Save order.
-        </p>
+        <p className="mt-2 text-sm text-slate-600">Drag and drop images to reorder them, then click Save order.</p>
         <div className="mt-4">
           <SortableImageList
             productId={product.id}
@@ -152,9 +149,7 @@ export default async function ProductEditAdminPage({
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">QC Sets</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Edit QC set fields and manage image order per set.
-        </p>
+        <p className="mt-2 text-sm text-slate-600">Edit QC set fields and manage image order per set.</p>
 
         <div className="mt-4 grid gap-4">
           {product.qcSets.length > 0 ? (
