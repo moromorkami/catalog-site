@@ -79,7 +79,7 @@ export default async function AdminPage() {
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2">
-        {loaded.links.map((link) => (
+        {loaded.links.map((link: any) => (
           <Link
             key={link.href}
             href={link.href}

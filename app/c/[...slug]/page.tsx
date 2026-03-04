@@ -201,7 +201,7 @@ export default async function CategoryPage({
           <Link href="/" className="hover:text-slate-900">
             Home
           </Link>
-          {resolvedPath.breadcrumbs.map((crumb) => (
+          {resolvedPath.breadcrumbs.map((crumb: any) => (
             <div key={crumb.id} className="flex items-center gap-2">
               <span>/</span>
               <Link href={`/c/${crumb.path.join("/")}`} className="hover:text-slate-900">
@@ -226,7 +226,7 @@ export default async function CategoryPage({
               className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
             >
               <option value="">All brands</option>
-              {brands.map((brand) => (
+              {brands.map((brand: any) => (
                 <option key={brand.id} value={brand.slug}>
                   {brand.name}
                 </option>
@@ -241,7 +241,7 @@ export default async function CategoryPage({
               className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
             >
               <option value="">All suppliers</option>
-              {suppliers.map((supplier) => (
+              {suppliers.map((supplier: any) => (
                 <option key={supplier.id} value={supplier.slug}>
                   {supplier.name}
                 </option>
@@ -282,7 +282,7 @@ export default async function CategoryPage({
         </div>
         {products.length > 0 ? (
           <div className="grid gap-4">
-            {products.map((product) => {
+            {products.map((product: any) => {
               const hasQc = product._count.qcSets > 0 || product.images.length > 0;
 
               return (

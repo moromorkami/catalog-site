@@ -92,7 +92,7 @@ export default async function NewProductAdminPage() {
         ...(selectedCategoryIds.length > 0
           ? {
               categories: {
-                create: selectedCategoryIds.map((categoryId) => ({
+                create: selectedCategoryIds.map((categoryId: any) => ({
                   category: {
                     connect: { id: categoryId },
                   },

@@ -130,7 +130,7 @@ export default async function BrandsAdminPage() {
                 </tr>
               </thead>
               <tbody className="text-slate-700">
-                {brands.map((brand) => (
+                {brands.map((brand: any) => (
                   <tr key={brand.id} className="border-t border-slate-100">
                     <td className="py-2 pr-4">{brand.name}</td>
                     <td className="py-2 pr-4">{brand.slug}</td>

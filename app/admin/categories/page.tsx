@@ -173,7 +173,7 @@ export default async function CategoriesAdminPage() {
               className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
             >
               <option value="">None (top-level)</option>
-              {categoryPaths.map((category) => (
+              {categoryPaths.map((category: any) => (
                 <option key={category.id} value={category.id}>
                   {category.pathLabel}
                 </option>
@@ -209,7 +209,7 @@ export default async function CategoriesAdminPage() {
                 </tr>
               </thead>
               <tbody className="text-slate-700">
-                {categoryPaths.map((category) => (
+                {categoryPaths.map((category: any) => (
                   <tr key={category.id} className="border-t border-slate-100">
                     <td className="py-2 pr-4">
                       <Link

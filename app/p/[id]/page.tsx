@@ -102,8 +102,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         },
       });
 
-      const categoryById = new Map(allCategories.map((category) => [category.id, category]));
-      const categoryPaths = product.categories.map((item) =>
+      const categoryById = new Map(allCategories.map((category: any) => [category.id, category]));
+      const categoryPaths = product.categories.map((item: any) =>
         buildCategoryPath(item.category.id, categoryById),
       );
 
@@ -184,7 +184,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             ) : null}
             <div className="mt-3 flex flex-wrap gap-2">
               {categoryPaths.length > 0 ? (
-                categoryPaths.map((category) => (
+                categoryPaths.map((category: any) => (
                   <Link
                     key={category.href}
                     href={category.href}

@@ -89,7 +89,7 @@ export default async function OrdersAdminPage() {
 
         {orders.length > 0 ? (
           <div className="grid gap-4">
-            {orders.map((order) => {
+            {orders.map((order: any) => {
               const statusKey = order.status as OrderStatus;
 
               return (
@@ -126,7 +126,7 @@ export default async function OrdersAdminPage() {
                         </tr>
                       </thead>
                       <tbody className="text-slate-700">
-                        {order.items.map((item) => (
+                        {order.items.map((item: any) => (
                           <tr key={item.id} className="border-t border-slate-100">
                             <td className="py-2 pr-4">
                               <Link href={`/p/${item.product.id}`} className="text-slate-900 underline">
