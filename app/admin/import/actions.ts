@@ -362,7 +362,9 @@ export async function importCsvAction(
       const rowNumber = index + 2;
 
       try {
-        const rowCounts = await prisma.$transaction((tx) => importRecordRow(tx, row));
+        const rowCounts = await prisma.$transaction(async (tx: any) => {
+  return importRecordRow(tx, row);
+});
         summary.rowsSucceeded += 1;
         summary.suppliersCreated += rowCounts.suppliersCreated;
         summary.brandsCreated += rowCounts.brandsCreated;
