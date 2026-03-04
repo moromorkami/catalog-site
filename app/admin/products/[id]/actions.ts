@@ -1,17 +1,18 @@
 "use server";
 
-import { ImageType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getSupabaseStoragePathFromUrl } from "@/src/lib/supabase-storage-path";
 import { getSupabaseStorageBucket, getSupabaseStorageClient } from "@/src/lib/supabase-server";
 import { prisma } from "@/src/lib/prisma";
 
+const IMAGE_TYPE_SUPPLIER = "SUPPLIER" as const;
+const IMAGE_TYPE_QC = "QC" as const;
+
 function toMessage(error: unknown) {
   if (error instanceof Error && error.message) {
     return error.message;
   }
-
   return "Action failed due to an unknown error.";
 }
 
@@ -52,18 +53,16 @@ async function refreshProductPaths(productId: string) {
 
 export async function reorderSupplierImagesAction(formData: FormData) {
   const productId = parseProductId(formData);
-  if (!productId) {
-    return;
-  }
+  if (!productId) return;
 
   try {
     const orderedIds = parseOrderedIds(formData);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       const existingImages = await tx.productImage.findMany({
         where: {
           productId,
-          type: ImageType.SUPPLIER,
+          type: IMAGE_TYPE_SUPPLIER,
         },
         select: { id: true },
       });
@@ -72,7 +71,7 @@ export async function reorderSupplierImagesAction(formData: FormData) {
         throw new Error("Supplier image order is out of sync. Reload and try again.");
       }
 
-      const existingIds = new Set(existingImages.map((image) => image.id));
+      const existingIds = new Set(existingImages.map((image: any) => image.id));
       for (const id of orderedIds) {
         if (!existingIds.has(id)) {
           throw new Error("Supplier image order contains invalid image IDs.");
@@ -97,14 +96,12 @@ export async function reorderQcSetImagesAction(formData: FormData) {
   const productId = parseProductId(formData);
   const qcSetId = String(formData.get("qcSetId") ?? "").trim();
 
-  if (!productId || !qcSetId) {
-    return;
-  }
+  if (!productId || !qcSetId) return;
 
   try {
     const orderedIds = parseOrderedIds(formData);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       const qcSet = await tx.qcSet.findUnique({
         where: { id: qcSetId },
         select: { id: true, productId: true },
@@ -117,7 +114,7 @@ export async function reorderQcSetImagesAction(formData: FormData) {
       const existingImages = await tx.productImage.findMany({
         where: {
           productId,
-          type: ImageType.QC,
+          type: IMAGE_TYPE_QC,
           qcSetId,
         },
         select: { id: true },
@@ -127,7 +124,7 @@ export async function reorderQcSetImagesAction(formData: FormData) {
         throw new Error("QC image order is out of sync. Reload and try again.");
       }
 
-      const existingIds = new Set(existingImages.map((image) => image.id));
+      const existingIds = new Set(existingImages.map((image: any) => image.id));
       for (const id of orderedIds) {
         if (!existingIds.has(id)) {
           throw new Error("QC image order contains invalid image IDs.");
@@ -152,9 +149,7 @@ export async function updateQcSetAction(formData: FormData) {
   const productId = parseProductId(formData);
   const qcSetId = String(formData.get("qcSetId") ?? "").trim();
 
-  if (!productId || !qcSetId) {
-    return;
-  }
+  if (!productId || !qcSetId) return;
 
   const title = String(formData.get("title") ?? "").trim();
   const warehouse = String(formData.get("warehouse") ?? "").trim();
@@ -189,9 +184,7 @@ export async function deleteProductImageAction(formData: FormData) {
   const productId = parseProductId(formData);
   const imageId = String(formData.get("imageId") ?? "").trim();
 
-  if (!productId || !imageId) {
-    return;
-  }
+  if (!productId || !imageId) return;
 
   try {
     const image = await prisma.productImage.findFirst({
@@ -225,9 +218,7 @@ export async function deleteProductImageAction(formData: FormData) {
     }
 
     await prisma.productImage.delete({
-      where: {
-        id: image.id,
-      },
+      where: { id: image.id },
     });
 
     await refreshProductPaths(productId);
