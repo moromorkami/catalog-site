@@ -74,7 +74,7 @@ export async function submitOrderRequestAction(
       };
     }
 
-    const order = await prisma.$transaction(async (tx) => {
+    const order = await prisma.$transaction(async (tx: any) => {
       const createdOrder = await tx.order.create({
         data: {
           name,
