@@ -112,9 +112,9 @@ const categoryPaths = (product.categories as any[]).map((item) =>
   buildCategoryPath(String(item.category.id), categoryById),
 );
 
-      const supplierPhotos = product.images
-        .filter((image) => image.type === IMAGE_TYPE_SUPPLIER)
-        .map((image, index) => ({
+      const supplierPhotos = (product.images as any[])
+  .filter((image: any) => image.type === IMAGE_TYPE_SUPPLIER)
+  .map((image: any, index: number) => ({
           id: image.id,
           url: image.url,
           label: `Supplier photo ${index + 1}`,
