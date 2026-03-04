@@ -5,6 +5,25 @@ import { prisma } from "@/src/lib/prisma";
 
 type OrderStatus = "NEW" | "IN_PROGRESS" | "PAID" | "SHIPPED" | "CANCELLED";
 
+type OrderItemRow = {
+  id: string;
+  qty: number;
+  variant: string | null;
+  note: string | null;
+  product: { id: string; title: string };
+};
+
+type OrderRow = {
+  id: string;
+  createdAt: Date;
+  status: OrderStatus | string;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  note: string | null;
+  items: OrderItemRow[];
+};
+
 const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   NEW: "New",
   IN_PROGRESS: "In progress",
@@ -13,32 +32,33 @@ const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   CANCELLED: "Cancelled",
 };
 
+type LoadedState =
+  | { ok: true; orders: OrderRow[] }
+  | { ok: false; setupErrorMessage: string };
+
 export default async function OrdersAdminPage() {
-  const loaded = await (async () => {
+  const loaded: LoadedState = await (async () => {
     try {
-      const orders = await prisma.order.findMany({
+      const ordersRaw = await prisma.order.findMany({
         orderBy: { createdAt: "desc" },
         include: {
           items: {
             include: {
               product: {
-                select: {
-                  id: true,
-                  title: true,
-                },
+                select: { id: true, title: true },
               },
             },
           },
         },
       });
 
-      return { ok: true as const, orders };
+      // Cast to our UI shape to avoid "implicit any" in Vercel strict TS
+      return { ok: true as const, orders: ordersRaw as unknown as OrderRow[] };
     } catch (error) {
       const setupErrorMessage = getPrismaSetupErrorMessage(error);
       if (setupErrorMessage) {
         return { ok: false as const, setupErrorMessage };
       }
-
       throw error;
     }
   })();
@@ -70,7 +90,7 @@ export default async function OrdersAdminPage() {
         {orders.length > 0 ? (
           <div className="grid gap-4">
             {orders.map((order) => {
-              const status = order.status as OrderStatus;
+              const statusKey = order.status as OrderStatus;
 
               return (
                 <article key={order.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -78,7 +98,8 @@ export default async function OrdersAdminPage() {
                     <div>
                       <p className="text-sm font-semibold text-slate-900">Order {order.id}</p>
                       <p className="text-xs text-slate-600">
-                        {order.createdAt.toLocaleString()} | Status: {ORDER_STATUS_LABELS[status] ?? String(order.status)}
+                        {order.createdAt.toLocaleString()} | Status:{" "}
+                        {ORDER_STATUS_LABELS[statusKey] ?? String(order.status)}
                       </p>
                     </div>
                     <div className="text-right text-xs text-slate-600">
