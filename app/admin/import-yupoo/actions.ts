@@ -1,6 +1,9 @@
+"use server";
+
 import { ImageType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/src/lib/prisma";
+import type { ImportYupooActionState } from "./state";
 
 const FETCH_TIMEOUT_MS = 15000;
 const MAX_IMAGE_COUNT = 120;
@@ -10,25 +13,6 @@ const ALBUM_FETCH_USER_AGENT =
 type CandidateImageUrl = {
   value: string;
   trusted: boolean;
-};
-
-type ImportYupooResult = {
-  productId: string;
-  productTitle: string;
-  imageCount: number;
-  yupooUrl: string;
-};
-
-export type ImportYupooActionState = {
-  status: "idle" | "success" | "error";
-  message: string;
-  result: ImportYupooResult | null;
-};
-
-export const initialImportYupooState: ImportYupooActionState = {
-  status: "idle",
-  message: "",
-  result: null,
 };
 
 function toErrorMessage(error: unknown): string {
@@ -289,8 +273,6 @@ export async function importYupooAlbumAction(
   _prevState: ImportYupooActionState,
   formData: FormData,
 ): Promise<ImportYupooActionState> {
-  "use server";
-
   try {
     const yupooUrlRaw = String(formData.get("yupooUrl") ?? "").trim();
     const supplierId = String(formData.get("supplierId") ?? "").trim();
